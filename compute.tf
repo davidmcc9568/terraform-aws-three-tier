@@ -1,7 +1,21 @@
+resource "aws_launch_template" "web" {
+  name_prefix   = "web-lt-"
+  image_id      = "ami-007855ac798b5175e" # AMI ID for Ubuntu 22.04; replace it with the appropriate AMI ID for your use case
+  instance_type = var.web_instance_type   #change instance size to your specifications in .tfvars file, such as M5 General
+
+  vpc_security_group_ids = [aws_security_group.web.id]
+
+  user_data = base64encode(templatefile("${path.module}/userdata.tpl", {}))
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+/*
 resource "aws_launch_configuration" "web" {
   name_prefix   = "web-lc-"
   image_id      = "ami-007855ac798b5175e" # AMI ID for Ubuntu 22.04; replace it with the appropriate AMI ID for your use case
-  instance_type = "t2.micro" #change instance size to your specifications, such as M5 General
+  instance_type = var.web_instance_type   #change instance size to your specifications in .tfvars file, such as M5 General
 
   security_groups = [aws_security_group.web.id]
 
@@ -9,15 +23,16 @@ resource "aws_launch_configuration" "web" {
     create_before_destroy = true
   }
 }
+*/
 
 resource "aws_autoscaling_group" "web" {
   name_prefix          = "web-asg-"
-  launch_configuration = aws_launch_configuration.web.id
+  launch_configuration = aws_launch_template.web.id
   min_size             = 1
   max_size             = 4
   desired_capacity     = 2
   vpc_zone_identifier  = module.vpc.public_subnets
-  target_group_arns = [aws_lb_target_group.web.arn]
+  target_group_arns    = [aws_lb_target_group.web.arn]
 
   tag {
     key                 = "Name"
@@ -42,10 +57,25 @@ resource "aws_autoscaling_group" "web" {
   }
 }
 
+resource "aws_launch_template" "app" {
+  name_prefix   = "app-lt-"
+  image_id      = "ami-007855ac798b5175e" # AMI ID for Ubuntu 22.04; replace it with the appropriate AMI ID for your use case
+  instance_type = var.web_instance_type   #change instance size to your specifications in .tfvars file, such as M5 General
+
+  vpc_security_group_ids = [aws_security_group.web.id]
+
+  user_data = base64encode(templatefile("${path.module}/userdata.tpl", {}))
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+/*
 resource "aws_launch_configuration" "app" {
   name_prefix   = "app-lc"
   image_id      = "ami-007855ac798b5175e" # Replace this with the appropriate AMI ID for your region
-  instance_type = "t2.micro"
+  instance_type = var.app_instance_type
 
   security_groups = [aws_security_group.app.id]
 
@@ -53,12 +83,12 @@ resource "aws_launch_configuration" "app" {
     create_before_destroy = true
   }
 }
-
+*/
 resource "aws_autoscaling_group" "app" {
-  name_prefix = "app-asg"
-  vpc_zone_identifier = module.vpc.private_subnets
-  launch_configuration = aws_launch_configuration.app.id
-  target_group_arns = [aws_lb_target_group.app.arn]
+  name_prefix          = "app-asg"
+  vpc_zone_identifier  = module.vpc.private_subnets
+  launch_configuration = aws_launch_template.app.id
+  target_group_arns    = [aws_lb_target_group.app.arn]
 
   min_size         = 1
   max_size         = 3

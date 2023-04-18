@@ -3,18 +3,19 @@ terraform {
   required_providers {
     aws = {
       source = "hashicorp/aws"
+      version = ">= 4.8.0"
     }
   }
 }
 
 provider "aws" {
-  region  = "us-east-1"
-  profile = "david-dev"
+  region  = var.aws_region
+  profile = var.aws_profile
 }
 
 locals {
   common_tags = {
     Terraform   = "true"
-    Environment = "dev"
+    Environment = var.environment
   }
 }
