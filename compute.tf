@@ -11,19 +11,6 @@ resource "aws_launch_template" "web" {
     create_before_destroy = true
   }
 }
-/*
-resource "aws_launch_configuration" "web" {
-  name_prefix   = "web-lc-"
-  image_id      = "ami-007855ac798b5175e" # AMI ID for Ubuntu 22.04; replace it with the appropriate AMI ID for your use case
-  instance_type = var.web_instance_type   #change instance size to your specifications in .tfvars file, such as M5 General
-
-  security_groups = [aws_security_group.web.id]
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-*/
 
 resource "aws_autoscaling_group" "web" {
   name_prefix          = "web-asg-"
@@ -71,19 +58,6 @@ resource "aws_launch_template" "app" {
   }
 }
 
-/*
-resource "aws_launch_configuration" "app" {
-  name_prefix   = "app-lc"
-  image_id      = "ami-007855ac798b5175e" # Replace this with the appropriate AMI ID for your region
-  instance_type = var.app_instance_type
-
-  security_groups = [aws_security_group.app.id]
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-*/
 resource "aws_autoscaling_group" "app" {
   name_prefix          = "app-asg"
   vpc_zone_identifier  = module.vpc.private_subnets
